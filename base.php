@@ -19,7 +19,6 @@ class Crud{
         }
         //echo "Connected successfully";
     }
-
     public function __destruct()
     {
         // Close db connection
@@ -28,8 +27,7 @@ class Crud{
             //echo "Connection closed";
         }
     }
-
-    public function viewAll()
+    protected function viewAll()
     {
        $sql_query = mysqli_query($this->conn,"SELECT * FROM student") or die('Query Error');
        while($row = mysqli_fetch_object($sql_query))
@@ -38,22 +36,20 @@ class Crud{
        }
 
     }
-
-    public function viewSpecific($id)
+    protected  function viewSpecific($id)
     {  
        $this->id = $id; 
        $sql_query = mysqli_query($this->conn,"SELECT * FROM student WHERE id='$this->id' LIMIT 1") or die('Query Error');
        $row = mysqli_fetch_object($sql_query);
        echo $row->id." ".$row->firstname." ".$row->lastname;
     }
-
-    public function delete($id)
+    protected  function delete($id)
     {  
        $this->id = $id; 
        $sql_query = mysqli_query($this->conn,"DELETE FROM student WHERE id='$this->id'") or die('Query Error');
        echo "Record removed";
     }
-    public function update($id,$firstname,$lastname,$course)
+    protected  function update($id,$firstname,$lastname,$course)
     {  
        $this->id = $id; 
        $sql_query = mysqli_query($this->conn,"UPDATE student SET 
@@ -63,26 +59,42 @@ class Crud{
         WHERE id='$this->id'") or die('Query Error');
        echo "Record changed";
     }
-    public function insert($id,$firstname,$lastname,$course)
+    protected  function insert($id,$firstname,$lastname,$course)
     {  
        $this->id = $id; 
        $sql_query = mysqli_query($this->conn,"INSERT INTO student(id,firstname,lastname,course) VALUES
        ($id,'$firstname','$lastname','$course')") or die('Query Error');
        echo "Record added";
     }
-    public function search($firstname)
+    protected  function search($firstname)
     {   
-       $sql_query = mysqli_query($this->conn,"SELECT * FROM student WHERE firstname LIKE '%K%'") or die('Query Error');
-       $row = mysqli_fetch_object($sql_query);
-       echo $row->id." ".$row->firstname." ".$row->lastname;
+       $sql = "SELECT * FROM student WHERE firstname LIKE '%".$firstname."%' ";
+       $sql_query = mysqli_query($this->conn,$sql) or die('Query Error');
+       echo "Results :".mysqli_num_rows($sql_query)."<hr/>";
+       while($row = mysqli_fetch_object($sql_query))
+       {
+         if($row){
+         echo $row->id." ".$row->firstname." ".$row->lastname."<br/>";}
+         else{
+            echo "No record found!";
+         }
+      }
     }
 }
 
+class Transaction extends Crud{
+   public function doTrans($operation,$value)
+   {
+      if($operation == 'hanap')
+      {
+         $this->search($value);
+      }
+      else if($operation == 'hanapIsa'){
+         $this->viewSpecific($value); 
+      }
+   }
+}
 
-$crud = new Crud();
-//$crud->viewAll();
-//$crud->viewSpecific(2);
-//$crud->delete(2);
-//$crud->update(1,'James','Saint','BSIT');
-//$crud->insert(4,'Naye','Saint','BSCS');
-$crud->search('K');
+
+// $transaction = new Transaction();
+// $transaction->doTrans("hanapIsa",1);
